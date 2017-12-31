@@ -1,0 +1,31 @@
+<html>
+<script>
+
+var url = "rest.php";
+
+window.onload = function() {
+	//load();
+};
+
+function store(datas) {
+	item = document.getElementById('test');
+	item.innerHTML = datas['val'];
+} 
+
+function load() {
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			var datas = JSON.parse(this.responseText);
+			store(datas);
+		}
+	};
+	xmlhttp.open("GET", url, true);
+	xmlhttp.send();
+}
+</script> 
+<body>
+<div id="test">
+</div>
+</body>
+</html>
