@@ -91,12 +91,12 @@ function sleep(ms) {
 } 
 
 async function off(method, delay) {
-	console.log('off for ' + delay);
+	//console.log('off for ' + delay);
 	await sleep(delay);
 }
 
 async function on(method, delay) {
-	console.log('on for ' + delay);
+	//console.log('on for ' + delay);
 	if (method == 0) {
 		// sound here
 	}
@@ -145,7 +145,7 @@ function convert_to_array(morse) {
 	// and i need an index
 	delay = 0;
 	for (var i = 0, len = morse.length; i < len; i++) { 
-		console.log(delay + ' ' + morse[i]);
+		//console.log(delay + ' ' + morse[i]);
 
 		if ((morse[i]) == '.') {
 			if (delay > 0) {
@@ -205,13 +205,13 @@ function beep(volume, frequency, type, duration) {
   gainNode.connect(audioCtx.destination);
 
   oscillator.start();
-	console.log('start');
+	//console.log('start');
 
   setTimeout(
     function() {
 			gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
       //oscillator.stop();
-			console.log('stop');
+			//console.log('stop');
     },
     duration
   );
@@ -221,12 +221,12 @@ function beep(volume, frequency, type, duration) {
 function process_morse() {
 	tic = 1200 / speed;
 	if (!stop_morse) {
-		console.log('process morse called');
+		//console.log('process morse called');
 		index = index + 1;
 		item = morse_array[index];
 		on = item[0];
 		delay = item[1] * tic;
-		console.log("on = " + on + ", delay = " + delay);
+		//console.log("on = " + on + ", delay = " + delay);
 
 		if (method == 0) {
 			if (on == 1) {
@@ -273,7 +273,13 @@ function remove() {
 	item.innerHTML = "";
 }
 
+function reset() { 
+	item = document.getElementById('morse_as_text');
+	item.innerHTML = '';
+}
+
 function store(datas) {
+	reset();
 	text = datas['val'];
 	parse_text();
 }
