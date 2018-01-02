@@ -203,18 +203,9 @@ function beep(volume, frequency, type, duration) {
 
   oscillator.connect(gainNode);
   gainNode.connect(audioCtx.destination);
-
+	gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime)
+	gainNode.gain.setTargetAtTime(0.0, audioCtx.currentTime + duration / 1000 - 0.002, 0.002) 
   oscillator.start();
-	//console.log('start');
-
-  setTimeout(
-    function() {
-			gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
-      //oscillator.stop();
-			//console.log('stop');
-    },
-    duration
-  );
 }
 
 
@@ -230,7 +221,7 @@ function process_morse() {
 
 		if (method == 0) {
 			if (on == 1) {
-				beep(100, 440, 0, delay); }
+				beep(50, 440, 0, delay); }
 		}
 		if (method == 1) {
 			display_block(1, on);
