@@ -9,14 +9,16 @@
 var url = "rest.php"; 
 var text = "";
 var morse_text = ""; // morse version, will be used for async shit
-var morse_array = [];
-
+var morse_array;
+var method = -1; // last method used, global because async (maybe i should create an object someday)
+var index = -1; // index of the current thing played/flashed 
+var initial_delay = 100;
+var stop_morse = false;
+var audioCtx = new(window.AudioContext || window.webkitAudioContext)();
 
 var speed = 25; // in wpm
 // T(ms) = 1200 / W(wpm)
-var speed_change = 0; // will change to -1 if decreasing
-var speed_direction = 1; // 1 for more, -1 for less
-
+var speed_direction = 0; // 1 for more, -1 for less
 
 function code(letter) {
 	switch (letter) {
@@ -86,8 +88,7 @@ function display_state(state) {
 
 function sleep(ms) {
 	  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
+} 
 
 async function off(method, delay) {
 	console.log('off for ' + delay);
@@ -107,16 +108,6 @@ async function on(method, delay) {
 	}
 }
 
-
-// i would like to convert that to an array of things to do
-// array would be like 
-// 1 200
-// 0 200
-// 1 300
-// etc
-// so that i would just have to have a cursor, and be able to go super full async like a master
-
-
 function display_block(here, visible) {
 	if (here == 0) {
 		document.getElementById('morse_as_block').style.display = "none"; 
@@ -130,7 +121,6 @@ function display_block(here, visible) {
 	else { 
 		document.getElementById('morse_as_block').style.visibility = "visible"; 
 	} 
-
 }
 
 
@@ -143,11 +133,44 @@ function convert_to_array(morse) {
 	// if i have a ., i play delay, reset it, play tic, and tic will be added to delay
 	// if i have a -, i play delay, reset it, play 3tic, and tic will be added to delay
 	// if i have a  , i add 3tic to delay
-	// if i have a /, i add 1tic to delay
+	// if i have a /, i add 1tic to delay (because it's space slash space, so that will be 7)
+
+//	array.push([200,1]); // on for 200
+//	array.push([48,0]); // off for 48
 
 
 
+	morse_array = new Array();
 
+	// and i need an index
+	delay = 0;
+	for (var i = 0, len = morse.length; i < len; i++) { 
+		console.log(delay + ' ' + morse[i]);
+
+		if ((morse[i]) == '.') {
+			if (delay > 0) {
+				morse_array.push([0, delay]);
+				delay = 0;
+			}
+			morse_array.push([1, 1]);
+			delay = 1;
+		}
+		if ((morse[i]) == '-') {
+			if (delay > 0) {
+				morse_array.push([0, delay]);
+				delay = 0;
+			}
+			morse_array.push([1, 3]);
+			delay = 1;
+		}
+		if ((morse[i]) == ' ') {
+			delay = delay + 2; // the tic after each signal addsup, that makes 3
+		}
+		if ((morse[i]) == '/') {
+			delay = delay + 2; // a separation between two words is stored as ' / ', that makes 7
+		} 
+	} 
+	return morse_array;
 }
 
 function convert_to_morse(text) {
@@ -162,66 +185,81 @@ function convert_to_morse(text) {
 function display_morse() {
 	item = document.getElementById('morse_as_text');
 	item.innerHTML = morse_text; 
+} 
+
+function flash(on) {
+	if (method == 1) {
+		display_block(1, on);
+	} 
+	if (method == 0) {
+		// play some sound for n sec
+		// beware, it's again not symmetrical...................................
+	}
+}
+
+function beep(volume, frequency, type, duration) {
+	var oscillator = audioCtx.createOscillator();
+	var gainNode = audioCtx.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  oscillator.start();
+	console.log('start');
+
+  setTimeout(
+    function() {
+			gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
+      //oscillator.stop();
+			console.log('stop');
+    },
+    duration
+  );
 }
 
 
-async function play(method) {
-	// method :
-	// 0 : bip
-	// 1 : display as text
-	// 2 : flash some block on the screen
+function process_morse() {
+	tic = 1200 / speed;
+	if (!stop_morse) {
+		console.log('process morse called');
+		index = index + 1;
+		item = morse_array[index];
+		on = item[0];
+		delay = item[1] * tic;
+		console.log("on = " + on + ", delay = " + delay);
 
-	tic = 1200 / speed; // tic is in ms
-	console.log('speed = ' + speed);
-	console.log('tic = ' + tic);
-
-	if (method == 1) { reset_morse_as_text(); }
-	if (method == 2) { display_block(1, 0); }
-
-	duration_off = 0; // pause before the signal, depends of the last char
-
-	for (var i = 0, len = text.length; i < len; i++) {
-		// note : if letter = ' ', then special pause
-
-
-		letter = text[i].toUpperCase();
-		c = code(letter);
-		if (method == 1) {
-			append_morse_as_text(c + ' ');
+		if (method == 0) {
+			if (on == 1) {
+				beep(100, 440, 0, delay); }
 		}
-		else {
-			if (c == " ") { off(method, 7 * tic); } // 7 but minus 3 because the character space was already off
-			else { 
-
-				if (i > 0) {
-					off(method, 3 * tic); } 
-				
-				for (var j = 0, lenj = c.length; i < len; i++) {
-
-					if (j > 0) {
-						off(method, tic)
-					}
-
-					d = c[i];
-					if (d == '.') {
-						on(method, tic);
-					}
-					if (d == '-') {
-						on(method, tic * 3);
-					}
-				}
-				off(method, 2); // 3 minus the b
-
-			} 
+		if (method == 1) {
+			display_block(1, on);
 		} 
 
+		if (index < morse_array.length - 1) {
+			setTimeout(process_morse, delay); }
+		else { stop_morse = true; }
+
+			// if method = 0, then we call that for two items.
+			// if method = 1, then we call that for each items
 	}
 
+	if (stop_morse) {
+		display_block(0, 0);
+		stop_morse = false;
+
+	}
+}
+
+function play(method_) {
+	method = method_;
+	index = -1;
+	setTimeout(process_morse, initial_delay);
 }
 
 function display_speed() {
 	item = document.getElementById('speed');
-	item.innerHTML = 'speed = ' + speed;
+	item.innerHTML = 'wpm = ' + speed;
 }
 
 function display() {
@@ -237,8 +275,16 @@ function remove() {
 
 function store(datas) {
 	text = datas['val'];
+	parse_text();
+}
+
+function parse_text() {
 	morse_text = convert_to_morse(text);
+	morse_array = convert_to_array(morse_text);
 	display_state('loaded');
+	stop_morse = false;
+	// console.log(morse_text);
+	// console.log(morse_array);
 } 
 
 function do_speed_change(direction) {
@@ -285,11 +331,16 @@ function get_new() {
 	xmlhttp.send();
 }
 
-
+function set_speed(val) {
+	speed = val;
+	display_speed();
+}
 
 function test1() {
-	display_block(0,0);
+	text = 'test sos';
+	parse_text();
 } 
+
 function test2() {
 	display_block(0,1);
 }
@@ -300,13 +351,17 @@ function test4() {
 	display_block(1,1);
 }
 
+function do_stop_morse() {
+	stop_morse = true;
+}
 
 window.onload = function() {
-	display_state('ready');
+	display_state('click on Load');
 	display_speed();
 	//document.getElementById('morse_as_block').style.visibility = "hidden";
 	//document.getElementById('morse_as_block').style.display = "none";
 	// TODO hide block
+	display_block(0, 0);
 }
 
 
@@ -322,17 +377,17 @@ window.onload = function() {
 
 <br/>
 <button onclick="get_new()">Load</button><br/> 
-<button onclick="play(0)">Play</button><br/> 
+<button onclick="play(0)">Play</button>
+<button onclick="play(1)">Flash</button>
+<button onclick="do_stop_morse()">Stop</button><br/> 
 <button onclick="display_morse()">Display</button><br/> 
-<button onclick="play(2)">Flash</button><br/> 
 <button onclick="display()">Reveal</button><br/> 
-<button onclick="do_default_speed()">Default speed</button><br/>
-<button onclick="slower()">Slower</button><br/> 
-<button onclick="faster()">Faster</button><br/> 
+<button onclick="set_speed(5)">5wpm</button>
+<button onclick="set_speed(10)">10wpm</button>
+<button onclick="set_speed(15)">15wpm</button>
+<button onclick="set_speed(20)">20wpm</button>
+<button onclick="set_speed(25)">25wpm</button>
+<button onclick="set_speed(30)">30wpm</button><br/>
 <br/>
-<button onclick="test1()">test 1</button><br/> 
-<button onclick="test2()">test 2</button><br/> 
-<button onclick="test3()">test 3</button><br/> 
-<button onclick="test4()">test 4</button><br/> 
 </body>
 </html>
