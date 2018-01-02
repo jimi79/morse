@@ -1,0 +1,75 @@
+Mostly javascript.
+
+Some php in ajax -> some nodejs to get a random phrase, with user/pwd ?
+random phrase = exec (fortune|tail -n +3)
+
+and phrase will appear when u click on a button to show it
+another button to play it
+and a button to get another one
+-> 3 buttons
+and an inputbox that set the speed (in wps, and check the rules again)
+
+
+https://nodejs.org/api/https.html to do https
+https://www.univ-orleans.fr/iut-orleans/informatique/intra/tuto/php/rest2.html to do rest in php
+
+2 gits, one for www, one for nodejs. unless i go with php, still not sure.
+
+nodejs, still not sure : another port, where to store certificates, how to keep the service running.
+
+https://thomashunter.name/blog/php-vs-nodejs/
+
+----
+
+
+add 3 buttons : load (which store to a variable)
+play, wihch plays it
+display, which displays it
+
+play : store the alphabet as . and -
+. : n
+- : 3*n
+delay between - and . : n
+delay between two letters : 3*n
+delay between two words : 7*n
+
+
+CODE = {'A': '.-',     'B': '-...',   'C': '-.-.', 
+        'D': '-..',    'E': '.',      'F': '..-.',
+        'G': '--.',    'H': '....',   'I': '..',
+        'J': '.---',   'K': '-.-',    'L': '.-..',
+        'M': '--',     'N': '-.',     'O': '---',
+        'P': '.--.',   'Q': '--.-',   'R': '.-.',
+     	  'S': '...',    'T': '-',      'U': '..-',
+        'V': '...-',   'W': '.--',    'X': '-..-',
+        'Y': '-.--',   'Z': '--..',
+        
+        '0': '-----',  '1': '.----',  '2': '..---',
+        '3': '...--',  '4': '....-',  '5': '.....',
+        '6': '-....',  '7': '--...',  '8': '---..',
+        '9': '----.',
+
+        ' ': ' ',
+        '.': '.-.-.-',
+        ',': '--..--',
+        '?': '..--..',
+        "'": '.----.',
+        '!': '-..-.',
+        '(': '-.--.',
+        ')': '-.--.-',
+        '&': '.-...',
+        ':': '---...',
+        ';': '-.-.-.',
+        '=': '-...-',
+        '+': '.-.-.',
+        '-': '-....-',
+        '_': '..--.-',
+        '"': '.-..-.',
+        '$': '...-..-',
+        '@': '.--.-.' 
+        } 
+
+
+
+
+http://www.nu-ware.com/NuCode%20Help/index.html?morse_code_structure_and_timing_.htm

@@ -1,0 +1,18 @@
+.box{
+	width:100px;
+	height:100px;
+}
+ 
+.black{
+	background:#000;
+}
+
+.red{
+	background:#f00;
+}
+.green{
+	background:#0f0;
+}
+.blue{
+	background:#00f;
+}
