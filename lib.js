@@ -4,21 +4,27 @@ var morse_text = ""; // morse version, will be used for async shit
 var morse_array;
 var method = -1; // last method used, global because async (maybe i should create an object someday)
 var index = -1; // index of the current thing played/flashed 
-var initial_delay = 100;
 var in_progress = false;
-var audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+
+// sound 
+var audioCtx;
+var volume = 0.5;
+var initial_delay = 0;
+var volume_smooth_end = 0.001;
+var frequency = 440;
 
 var speed = 25; // in wpm
 var speed_direction = 0; // 1 for more, -1 for less
 
-function beep(volume, frequency, type, duration) {
+function beep(duration) {
 	var oscillator = audioCtx.createOscillator();
 	var gainNode = audioCtx.createGain();
 
   oscillator.connect(gainNode);
   gainNode.connect(audioCtx.destination);
-	gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime)
-	gainNode.gain.setTargetAtTime(0.0, audioCtx.currentTime + duration / 1000 - 0.002, 0.002) 
+	gainNode.gain.setValueAtTime(volume, audioCtx.currentTime)
+	//gainNode.gain.setTargetAtTime(0.0, audioCtx.currentTime + duration / 1000 - volume_smooth_end, volume_smooth_end);
+	gainNode.gain.setTargetAtTime(0.0, audioCtx.currentTime + duration / 1000, volume_smooth_end);
   oscillator.start();
 }
 
@@ -199,6 +205,12 @@ function do_speed_change(direction) {
 
 function do_stop_morse() {
 	in_progress = false;
+	if (method == 0) {
+		console.log('stopped');
+		audioCtx = null;
+	} else {
+		display_block(0, 0);
+	}
 }
 
 function faster() {
@@ -238,9 +250,13 @@ function parse_text() {
 
 function play(method_) {
 	if (!in_progress) {
-		in_progress = true;
 		method = method_;
 		index = -1;
+		in_progress = true;
+		if (method == 0) {
+			//audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+			audioCtx = new(window.AudioContext);
+		}
 		setTimeout(process_morse, initial_delay);
 	}
 	else {
@@ -257,7 +273,7 @@ function process_morse() {
 		delay = item[1] * tic;
 		if (method == 0) {
 			if (on == 1) {
-				beep(50, 440, 0, delay); }
+				beep( delay); }
 		}
 		if (method == 1) {
 			display_block(1, on);
@@ -269,7 +285,7 @@ function process_morse() {
 	}
 
 	if (!in_progress) {
-		display_block(0, 0);
+		do_stop_morse();
 	}
 }
 
