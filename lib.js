@@ -1,15 +1,14 @@
-var url = "rest.php"; 
+var url_get_new = "rest.php"; 
 var text = "";
 var morse_text = ""; // morse version, will be used for async shit
 var morse_array;
 var method = -1; // last method used, global because async (maybe i should create an object someday)
 var index = -1; // index of the current thing played/flashed 
 var initial_delay = 100;
-var stop_morse = false;
+var in_progress = false;
 var audioCtx = new(window.AudioContext || window.webkitAudioContext)();
 
 var speed = 25; // in wpm
-// T(ms) = 1200 / W(wpm)
 var speed_direction = 0; // 1 for more, -1 for less
 
 function beep(volume, frequency, type, duration) {
@@ -199,7 +198,7 @@ function do_speed_change(direction) {
 }
 
 function do_stop_morse() {
-	stop_morse = true;
+	in_progress = false;
 }
 
 function faster() {
@@ -226,7 +225,7 @@ function get_new() {
 			store(datas);
 		}
 	};
-	xmlhttp.open("GET", url, true);
+	xmlhttp.open("GET", url_get_new, true);
 	xmlhttp.send();
 }
 
@@ -234,27 +233,28 @@ function parse_text() {
 	morse_text = convert_to_morse(text);
 	morse_array = convert_to_array(morse_text);
 	display_state('loaded');
-	stop_morse = false;
-	// console.log(morse_text);
-	// console.log(morse_array);
+	in_progress = false;
 } 
 
 function play(method_) {
-	method = method_;
-	index = -1;
-	setTimeout(process_morse, initial_delay);
+	if (!in_progress) {
+		in_progress = true;
+		method = method_;
+		index = -1;
+		setTimeout(process_morse, initial_delay);
+	}
+	else {
+		alert('Already running');
+	}
 }
 
 function process_morse() {
 	tic = 1200 / speed;
-	if (!stop_morse) {
-		//console.log('process morse called');
+	if (in_progress) {
 		index = index + 1;
 		item = morse_array[index];
 		on = item[0];
 		delay = item[1] * tic;
-		//console.log("on = " + on + ", delay = " + delay);
-
 		if (method == 0) {
 			if (on == 1) {
 				beep(50, 440, 0, delay); }
@@ -265,16 +265,11 @@ function process_morse() {
 
 		if (index < morse_array.length - 1) {
 			setTimeout(process_morse, delay); }
-		else { stop_morse = true; }
-
-			// if method = 0, then we call that for two items.
-			// if method = 1, then we call that for each items
+		else { in_progress = false; } 
 	}
 
-	if (stop_morse) {
+	if (!in_progress) {
 		display_block(0, 0);
-		stop_morse = false;
-
 	}
 }
 
@@ -308,9 +303,6 @@ function store(datas) {
 window.onload = function() {
 	display_state('click on Load');
 	display_speed();
-	//document.getElementById('morse_as_block').style.visibility = "hidden";
-	//document.getElementById('morse_as_block').style.display = "none";
-	// TODO hide block
 	display_block(0, 0);
 }
 
