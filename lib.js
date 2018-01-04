@@ -1,23 +1,38 @@
+// TODO rename play(1) into play_text
+// TODO button play should become stop, like Play sound / Stop sound
+// and Play visual / Stop visual
+
+
 var url_get_new = "rest.php"; 
 var text = "";
 var morse_text = ""; // morse version, will be used for async shit
 var morse_array;
-var method = -1; // last method used, global because async (maybe i should create an object someday)
 var index = -1; // index of the current thing played/flashed 
-var in_progress = false;
+var flash_in_progress = false;
 
 // sound 
 var audioCtx;
 var volume = 0.5;
 var initial_delay = 0;
-var volume_smooth_end = 0.001;
+var volume_smooth_start = 0.0005;
+var volume_smooth_end = 0.0005;
 var frequency = 440;
 
 var speed = 25; // in wpm
 var fan_pause = 1; // fansworth like factor 
 var speed_direction = 0; // 1 for more, -1 for less
 
-function beep(duration) {
+
+// that has to go
+
+//	var audioCtx = new(window.AudioContext);
+//	var oscillator = audioCtx.createOscillator();
+//	var gainNode = audioCtx.createGain(); 
+//  oscillator.connect(gainNode);
+//  gainNode.connect(audioCtx.destination);
+
+
+function beep(duration) { // TODO that has to go as well
 	var oscillator = audioCtx.createOscillator();
 	var gainNode = audioCtx.createGain();
 
@@ -230,14 +245,9 @@ function do_speed_change(direction) {
 	display_speed();
 }
 
-function do_stop_morse() {
-	in_progress = false;
-	if (method == 0) {
-		console.log('stopped');
-		audioCtx = null;
-	} else {
-		display_block(0, 0);
-	}
+function stop_text() {
+	flash_in_progress = false;
+	display_block(0, 0);
 }
 
 function faster() {
@@ -245,13 +255,7 @@ function faster() {
 }
 
 function flash(on) {
-	if (method == 1) {
-		display_block(1, on);
-	} 
-	if (method == 0) {
-		// play some sound for n sec
-		// beware, it's again not symmetrical...................................
-	}
+	display_block(1, on);
 } 
 
 function get_new() {
@@ -272,28 +276,23 @@ function parse_text() {
 	morse_text = convert_to_morse(text);
 	morse_array = convert_to_array(morse_text);
 	display_state('loaded');
-	in_progress = false;
+	flash_in_progress = false;
 } 
 
-function play(method_) {
-	if (!in_progress) {
-		method = method_;
+function play_text() {
+	if (!flash_in_progress) {
 		index = -1;
-		in_progress = true;
-		if (method == 0) {
-			//audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-			audioCtx = new(window.AudioContext);
-		}
-		setTimeout(process_morse, initial_delay);
+		flash_in_progress = true;
+		setTimeout(process_flash, initial_delay);
 	}
 	else {
 		alert('Already running');
 	}
 }
 
-function process_morse() {
+function process_flash() {
 	tic = 1200 / speed;
-	if (in_progress) {
+	if (flash_in_progress) {
 		index = index + 1;
 		item = morse_array[index];
 		on = item[0];
@@ -302,29 +301,24 @@ function process_morse() {
 			on = 0;
 			delay = delay * fan_pause;
 		}
-
-		console.log(on + ' / ' + delay);
-		if (method == 0) {
-			if (on == 1) {
-				beep( delay); }
-		}
-		if (method == 1) {
-			display_block(1, on);
-		} 
-
+		display_block(1, on); 
 		if (index < morse_array.length - 1) {
-			setTimeout(process_morse, delay); }
-		else { in_progress = false; } 
+			setTimeout(process_flash, delay); }
+		else { flash_in_progress = false; } 
 	}
 
-	if (!in_progress) {
-		do_stop_morse();
+	if (!flash_in_progress) {
+		stop_text();
 	}
 }
 
 function remove() {
 	item = document.getElementById('text');
 	item.innerHTML = "";
+}
+
+function request_stop_text() {
+	flash_in_progress = false;
 }
 
 function reset() { 
@@ -356,10 +350,59 @@ function store(datas) {
 	parse_text();
 }
 
+function stop_sound() {
+	console.log('stopping oscillator');
+	
+}
+
+function play_sound() {
+	var audioCtx = new(window.AudioContext);
+	var oscillator = audioCtx.createOscillator();
+	var gainNode = audioCtx.createGain(); 
+
+	oscillator.connect(gainNode);
+	gainNode.connect(audioCtx.destination);
+	time=0;
+	tic=1200/speed; 
+	oscillator.start(); 
+	// i read the array. If 1, setvalue, if 0/2, settarget, at time shown
+	time = audioCtx.currentTime;
+	for (var i = 0, len = morse_array.length; i < len; i++) { 
+		val = morse_array[i];
+		on = val[0];
+		delay = val[1];
+		if (on == 2) {
+			on = 0;
+			delay = delay * fan_pause; 
+		}
+		if (on == 1) {
+			//gainNode.gain.setValueAtTime(volume, audioCtx.currentTime + time / 1000); // that is in sec
+			gainNode.gain.setTargetAtTime(volume, audioCtx.currentTime + time / 1000, volume_smooth_start); // that is in sec
+		}
+		if (on == 0) {
+			gainNode.gain.setTargetAtTime(0, audioCtx.currentTime + time / 1000, volume_smooth_end);
+		}
+		time = time + delay * tic;
+		console.log(on + '/' + time); 
+	}
+	gainNode.gain.setTargetAtTime(0, audioCtx.currentTime + time / 1000, volume_smooth_end);
+	console.log('will stop oscillo in ', time+1000);
+	//setTimeout(stop_sound, (time + 1000)); // that is in ms
+	//oscillator.stop(); // when ?? i have to calculate that to call a setduration, and pass the oscillator as a parameter. will do that later... first let's do that like maniac
+
+	// and should be stopped quickly, meaning i need two buttons to startstop, one for flash, one for sound
+}
+
 window.onload = function() {
 	display_state('click on Load');
 	display_speed();
 	display_fan_pause();
 	display_block(0, 0);
+	get_new();
 }
 
+
+
+function test() {
+	oscillator.start();
+}
