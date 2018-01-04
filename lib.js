@@ -14,6 +14,7 @@ var volume_smooth_end = 0.001;
 var frequency = 440;
 
 var speed = 25; // in wpm
+var fan_pause = 1; // fansworth like factor 
 var speed_direction = 0; // 1 for more, -1 for less
 
 function beep(duration) {
@@ -107,30 +108,50 @@ function convert_to_array(morse) {
 
 	// and i need an index
 	delay = 0;
+	delay_after_letter = false;
+	delay_after_word = false;
+	delay_after_signal = false;
 	for (var i = 0, len = morse.length; i < len; i++) { 
 		//console.log(delay + ' ' + morse[i]);
 
-		if ((morse[i]) == '.') {
-			if (delay > 0) {
-				morse_array.push([0, delay]);
-				delay = 0;
+		if ((morse[i] == '.')||(morse[i] == '-')) {
+			if (delay_after_word) {
+				morse_array.push([2, 7]); // 2 means blank, but that has to be mutiplied by fan factor
+				console.log('adding word separator');
 			}
+			else {
+				if (delay_after_letter) {
+					morse_array.push([2, 3]);
+				console.log('adding letter separator');
+				}
+				else {
+					if (delay_after_signal) {
+						morse_array.push([0, 1]);
+						console.log('adding signal separator');
+					} 
+				}
+			}
+			delay_after_letter = false;
+			delay_after_word = false;
+			delay_after_signal = false; 
+		} 
+
+
+		if ((morse[i]) == '.') {
 			morse_array.push([1, 1]);
-			delay = 1;
+			delay_after_signal = true;
+			console.log('adding di');
 		}
 		if ((morse[i]) == '-') {
-			if (delay > 0) {
-				morse_array.push([0, delay]);
-				delay = 0;
-			}
 			morse_array.push([1, 3]);
-			delay = 1;
+			delay_after_signal = true;
+			console.log('adding dah');
 		}
 		if ((morse[i]) == ' ') {
-			delay = delay + 2; // the tic after each signal addsup, that makes 3
+			delay_after_letter = true;
 		}
 		if ((morse[i]) == '/') {
-			delay = delay + 2; // a separation between two words is stored as ' / ', that makes 7
+			delay_after_word = true;
 		} 
 	} 
 	return morse_array;
@@ -175,6 +196,12 @@ function display_speed() {
 	item = document.getElementById('speed');
 	item.innerHTML = 'wpm = ' + speed;
 }
+
+function display_fan_pause() {
+	item = document.getElementById('fan_pause');
+	item.innerHTML = 'pause factor = ' + fan_pause;
+} 
+
 
 function display_state(state) {
 	item = document.getElementById('state');
@@ -271,6 +298,12 @@ function process_morse() {
 		item = morse_array[index];
 		on = item[0];
 		delay = item[1] * tic;
+		if (on == 2) {
+			on = 0;
+			delay = delay * fan_pause;
+		}
+
+		console.log(on + ' / ' + delay);
 		if (method == 0) {
 			if (on == 1) {
 				beep( delay); }
@@ -299,10 +332,17 @@ function reset() {
 	item.innerHTML = '';
 }
 
+function set_fan_pause(val) {
+	fan_pause = val;
+	display_fan_pause();
+}
+
 function set_speed(val) {
 	speed = val;
 	display_speed();
-}function sleep(ms) {
+}
+
+function sleep(ms) {
 	  return new Promise(resolve => setTimeout(resolve, ms));
 } 
  
@@ -319,6 +359,7 @@ function store(datas) {
 window.onload = function() {
 	display_state('click on Load');
 	display_speed();
+	display_fan_pause();
 	display_block(0, 0);
 }
 
