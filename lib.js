@@ -11,7 +11,6 @@ var index = -1; // index of the current thing played/flashed
 var flash_in_progress = false;
 
 // sound 
-var audioCtx;
 var volume = 0.5;
 var initial_delay = 0;
 var volume_smooth_start = 0.0005;
@@ -21,28 +20,6 @@ var frequency = 440;
 var speed = 25; // in wpm
 var fan_pause = 1; // fansworth like factor 
 var speed_direction = 0; // 1 for more, -1 for less
-
-
-// that has to go
-
-//	var audioCtx = new(window.AudioContext);
-//	var oscillator = audioCtx.createOscillator();
-//	var gainNode = audioCtx.createGain(); 
-//  oscillator.connect(gainNode);
-//  gainNode.connect(audioCtx.destination);
-
-
-function beep(duration) { // TODO that has to go as well
-	var oscillator = audioCtx.createOscillator();
-	var gainNode = audioCtx.createGain();
-
-  oscillator.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
-	gainNode.gain.setValueAtTime(volume, audioCtx.currentTime)
-	//gainNode.gain.setTargetAtTime(0.0, audioCtx.currentTime + duration / 1000 - volume_smooth_end, volume_smooth_end);
-	gainNode.gain.setTargetAtTime(0.0, audioCtx.currentTime + duration / 1000, volume_smooth_end);
-  oscillator.start();
-}
 
 function code(letter) {
 	switch (letter) {
@@ -100,7 +77,7 @@ function code(letter) {
 		case '$': out = '...-..-'; break;
 		case '@': out = '.--.-.'; break;
 		case ' ': out = '/'; break;
-		default: out = '/'; break;
+		default: out = ' '; break; // unknown char
 	} 
 	return out;
 }
