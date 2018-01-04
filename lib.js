@@ -1,8 +1,3 @@
-// TODO rename play(1) into play_text
-// TODO button play should become stop, like Play sound / Stop sound
-// and Play visual / Stop visual
-
-
 var url_get_new = "rest.php"; 
 var text = "";
 var morse_text = ""; // morse version, will be used for async shit
@@ -76,6 +71,7 @@ function code(letter) {
 		case '"': out = '.-..-.'; break;
 		case '$': out = '...-..-'; break;
 		case '@': out = '.--.-.'; break;
+		case '/': out = ' '; break;
 		case ' ': out = '/'; break;
 		default: out = ' '; break; // unknown char
 	} 
@@ -222,9 +218,10 @@ function do_speed_change(direction) {
 	display_speed();
 }
 
-function stop_text() {
+function stop_flash() {
 	flash_in_progress = false;
 	display_block(0, 0);
+	display_state('flash stopped');
 }
 
 function faster() {
@@ -256,8 +253,9 @@ function parse_text() {
 	flash_in_progress = false;
 } 
 
-function play_text() {
+function play_flash() {
 	if (!flash_in_progress) {
+		display_state('flash started');
 		index = -1;
 		flash_in_progress = true;
 		setTimeout(process_flash, initial_delay);
@@ -285,7 +283,7 @@ function process_flash() {
 	}
 
 	if (!flash_in_progress) {
-		stop_text();
+		stop_flash();
 	}
 }
 
@@ -328,11 +326,11 @@ function store(datas) {
 }
 
 function stop_sound() {
-	console.log('stopping oscillator');
-	
+	display_state('sound stopped'); 
 }
 
 function play_sound() {
+	display_state('sound started'); 
 	var audioCtx = new(window.AudioContext);
 	var oscillator = audioCtx.createOscillator();
 	var gainNode = audioCtx.createGain(); 
@@ -364,14 +362,14 @@ function play_sound() {
 	}
 	gainNode.gain.setTargetAtTime(0, audioCtx.currentTime + time / 1000, volume_smooth_end);
 	console.log('will stop oscillo in ', time+1000);
-	//setTimeout(stop_sound, (time + 1000)); // that is in ms
+	setTimeout(stop_sound, (time + 1000)); // that is in ms
 	//oscillator.stop(); // when ?? i have to calculate that to call a setduration, and pass the oscillator as a parameter. will do that later... first let's do that like maniac
 
 	// and should be stopped quickly, meaning i need two buttons to startstop, one for flash, one for sound
 }
 
 window.onload = function() {
-	display_state('click on Load');
+	display_state('click on Load'); // will disappear if get_new called after
 	display_speed();
 	display_fan_pause();
 	display_block(0, 0);
