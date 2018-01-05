@@ -6,7 +6,7 @@ var index = -1; // index of the current thing played/flashed
 var flash_in_progress = false;
 
 // sound 
-var volume = 0.8;
+var volume = 0.5;
 var initial_delay = 0;
 var volume_smooth_start = 0.0004;
 var volume_smooth_end = 0.0004;
@@ -15,6 +15,8 @@ var frequency = 440;
 var speed = 25; // in wpm
 var fan_pause = 1; // fansworth like factor 
 var speed_direction = 0; // 1 for more, -1 for less
+
+var audioCtx = new(window.AudioContext);
 
 function code(letter) {
 	switch (letter) {
@@ -105,17 +107,14 @@ function convert_to_array(morse) {
 		if ((morse[i] == '.')||(morse[i] == '-')) {
 			if (delay_after_word) {
 				morse_array.push([2, 7]); // 2 means blank, but that has to be mutiplied by fan factor
-				console.log('adding word separator');
 			}
 			else {
 				if (delay_after_letter) {
 					morse_array.push([2, 3]);
-				console.log('adding letter separator');
 				}
 				else {
 					if (delay_after_signal) {
 						morse_array.push([0, 1]);
-						console.log('adding signal separator');
 					} 
 				}
 			}
@@ -190,11 +189,16 @@ function display_fan_pause() {
 	item.innerHTML = 'pause factor = ' + fan_pause;
 } 
 
-
 function display_state(state) {
 	item = document.getElementById('state');
 	item.innerHTML = state;
 }
+
+function display_volume() {
+	item = document.getElementById('volume');
+	item.innerHTML = "volume = " + volume;
+}
+
 
 function do_default_speed() {
 	speed = 25;
@@ -311,6 +315,11 @@ function set_speed(val) {
 	display_speed();
 }
 
+function set_volume(val) {
+	volume = val;
+	display_volume();
+}
+
 function slower() {
 	do_speed_change(-1)
 }
@@ -323,11 +332,11 @@ function store(datas) {
 
 function stop_sound() {
 	display_state('sound stopped'); 
+	oscillator.stop();
 }
 
 function play_sound() {
 	display_state('sound started'); 
-	var audioCtx = new(window.AudioContext);
 	var oscillator = audioCtx.createOscillator();
 	var gainNode = audioCtx.createGain(); 
 	used_volume_smooth_start = volume_smooth_start;
@@ -339,10 +348,12 @@ function play_sound() {
 
 	oscillator.connect(gainNode);
 	gainNode.connect(audioCtx.destination);
-	time=0;
 	tic=1200/speed; 
-	oscillator.start(); 
 	time = audioCtx.currentTime;
+	time=0;
+	gainNode.gain.setValueAtTime(0, audioCtx.currentTime + time / 1000); 
+	oscillator.start(); 
+	time=1000;
 	for (var i = 0, len = morse_array.length; i < len; i++) { 
 		val = morse_array[i];
 		on = val[0];
@@ -360,7 +371,7 @@ function play_sound() {
 		time = time + delay * tic;
 	}
 	gainNode.gain.setTargetAtTime(0, audioCtx.currentTime + time / 1000, used_volume_smooth_end);
-	setTimeout(stop_sound, (time + 1000)); // that is in ms
+	//setTimeout(stop_sound(oscillator), (time + 1000)); // that is in ms
 	// perhaps a memory leak here, because sounds goes on, but nobody freed the variables.
 	// on another hand, they are locals, so how could there be a memory leak anyway
 }
@@ -370,6 +381,7 @@ window.onload = function() {
 	display_speed();
 	display_fan_pause();
 	display_block(0, 0);
+	display_volume();
 	get_new();
 }
 
