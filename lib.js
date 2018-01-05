@@ -127,12 +127,10 @@ function convert_to_array(morse) {
 		if ((morse[i]) == '.') {
 			morse_array.push([1, 1]);
 			delay_after_signal = true;
-			console.log('adding di');
 		}
 		if ((morse[i]) == '-') {
 			morse_array.push([1, 3]);
 			delay_after_signal = true;
-			console.log('adding dah');
 		}
 		if ((morse[i]) == ' ') {
 			delay_after_letter = true;
@@ -332,7 +330,6 @@ function store(datas) {
 
 function stop_sound() {
 	display_state('sound stopped'); 
-	oscillator.stop();
 }
 
 function play_sound() {
@@ -371,7 +368,7 @@ function play_sound() {
 		time = time + delay * tic;
 	}
 	gainNode.gain.setTargetAtTime(0, audioCtx.currentTime + time / 1000, used_volume_smooth_end);
-	//setTimeout(stop_sound(oscillator), (time + 1000)); // that is in ms
+	setTimeout(stop_sound(), (time + 1000)); // that is in ms
 	// perhaps a memory leak here, because sounds goes on, but nobody freed the variables.
 	// on another hand, they are locals, so how could there be a memory leak anyway
 }
