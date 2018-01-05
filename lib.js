@@ -6,10 +6,10 @@ var index = -1; // index of the current thing played/flashed
 var flash_in_progress = false;
 
 // sound 
-var volume = 0.5;
+var volume = 0.8;
 var initial_delay = 0;
-var volume_smooth_start = 0.0005;
-var volume_smooth_end = 0.0005;
+var volume_smooth_start = 0.0004;
+var volume_smooth_end = 0.0004;
 var frequency = 440;
 
 var speed = 25; // in wpm
@@ -311,10 +311,6 @@ function set_speed(val) {
 	display_speed();
 }
 
-function sleep(ms) {
-	  return new Promise(resolve => setTimeout(resolve, ms));
-} 
- 
 function slower() {
 	do_speed_change(-1)
 }
@@ -334,13 +330,18 @@ function play_sound() {
 	var audioCtx = new(window.AudioContext);
 	var oscillator = audioCtx.createOscillator();
 	var gainNode = audioCtx.createGain(); 
+	used_volume_smooth_start = volume_smooth_start;
+	used_volume_smooth_end = volume_smooth_end; 
+	//if (speed > 50) {
+	//	used_volume_smooth_start = 0;
+	//	used_volume_smooth_end = 0; 
+	//}
 
 	oscillator.connect(gainNode);
 	gainNode.connect(audioCtx.destination);
 	time=0;
 	tic=1200/speed; 
 	oscillator.start(); 
-	// i read the array. If 1, setvalue, if 0/2, settarget, at time shown
 	time = audioCtx.currentTime;
 	for (var i = 0, len = morse_array.length; i < len; i++) { 
 		val = morse_array[i];
@@ -351,21 +352,17 @@ function play_sound() {
 			delay = delay * fan_pause; 
 		}
 		if (on == 1) {
-			//gainNode.gain.setValueAtTime(volume, audioCtx.currentTime + time / 1000); // that is in sec
-			gainNode.gain.setTargetAtTime(volume, audioCtx.currentTime + time / 1000, volume_smooth_start); // that is in sec
+			gainNode.gain.setTargetAtTime(volume, audioCtx.currentTime + time / 1000, used_volume_smooth_start); // that is in sec
 		}
 		if (on == 0) {
-			gainNode.gain.setTargetAtTime(0, audioCtx.currentTime + time / 1000, volume_smooth_end);
+			gainNode.gain.setTargetAtTime(0, audioCtx.currentTime + time / 1000, used_volume_smooth_end);
 		}
 		time = time + delay * tic;
-		console.log(on + '/' + time); 
 	}
-	gainNode.gain.setTargetAtTime(0, audioCtx.currentTime + time / 1000, volume_smooth_end);
-	console.log('will stop oscillo in ', time+1000);
+	gainNode.gain.setTargetAtTime(0, audioCtx.currentTime + time / 1000, used_volume_smooth_end);
 	setTimeout(stop_sound, (time + 1000)); // that is in ms
-	//oscillator.stop(); // when ?? i have to calculate that to call a setduration, and pass the oscillator as a parameter. will do that later... first let's do that like maniac
-
-	// and should be stopped quickly, meaning i need two buttons to startstop, one for flash, one for sound
+	// perhaps a memory leak here, because sounds goes on, but nobody freed the variables.
+	// on another hand, they are locals, so how could there be a memory leak anyway
 }
 
 window.onload = function() {
