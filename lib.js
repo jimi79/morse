@@ -224,7 +224,7 @@ function do_speed_change(direction) {
 function stop_flash() {
 	flash_in_progress = false;
 	display_block(0, 0);
-	display_state('flash stopped');
+	display_state('ready');
 }
 
 function faster() {
@@ -252,13 +252,13 @@ function get_new() {
 function parse_text() {
 	morse_text = convert_to_morse(text);
 	morse_array = convert_to_array(morse_text);
-	display_state('loaded');
+	display_state('ready');
 	flash_in_progress = false;
 } 
 
 function play_flash() {
 	if (!flash_in_progress) {
-		display_state('flash started');
+		display_state('flash in progress');
 		index = -1;
 		flash_in_progress = true;
 		setTimeout(process_flash, initial_delay);
@@ -330,7 +330,7 @@ function store(datas) {
 }
 
 function stop_sound() {
-	display_state('sound stopped'); 
+	display_state('ready'); 
 	console.log('stop');
 }
 
@@ -355,7 +355,7 @@ function get_total_length(tic) {
 
 
 function play_sound() {
-	display_state('sound started'); 
+	display_state('sound in progress...'); 
 
 	var oscillator = audioCtx.createOscillator();
 	var gainNode = audioCtx.createGain(); 
