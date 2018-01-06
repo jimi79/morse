@@ -11,6 +11,7 @@ var initial_delay = 0;
 var volume_smooth_start = 0.0004;
 var volume_smooth_end = 0.0004;
 var frequency = 440;
+var pause_at_beginning = 1; // in secondes
 
 var speed = 25; // in wpm
 var fan_pause = 1; // fansworth like factor 
@@ -330,27 +331,44 @@ function store(datas) {
 
 function stop_sound() {
 	display_state('sound stopped'); 
+	console.log('stop');
 }
+
+
+function get_total_length(tic) {
+
+	total_length = pause_at_beginning * 1.0;
+	for (var i = 0, len = morse_array.length; i < len; i++) { 
+		val = morse_array[i];
+		on = val[0];
+		delay = val[1];
+		if (on == 2) {
+			on = 0;
+			delay = delay * fan_pause; 
+		}
+		total_length = total_length + (delay * tic / 1000);
+	} 
+	return total_length;
+}
+
+
+
 
 function play_sound() {
 	display_state('sound started'); 
+
 	var oscillator = audioCtx.createOscillator();
 	var gainNode = audioCtx.createGain(); 
 	used_volume_smooth_start = volume_smooth_start;
 	used_volume_smooth_end = volume_smooth_end; 
-	//if (speed > 50) {
-	//	used_volume_smooth_start = 0;
-	//	used_volume_smooth_end = 0; 
-	//}
-
 	oscillator.connect(gainNode);
 	gainNode.connect(audioCtx.destination);
-	tic=1200/speed; 
 	time = audioCtx.currentTime;
-	time=0;
-	gainNode.gain.setValueAtTime(0, audioCtx.currentTime + time / 1000); 
+	gainNode.gain.setValueAtTime(0, time); 
+	tic = 1200 / speed; 
+	setTimeout(stop_sound, get_total_length(tic) * 1000); // that is in ms 
 	oscillator.start(); 
-	time=1000;
+	time = time + pause_at_beginning; 
 	for (var i = 0, len = morse_array.length; i < len; i++) { 
 		val = morse_array[i];
 		on = val[0];
@@ -360,17 +378,15 @@ function play_sound() {
 			delay = delay * fan_pause; 
 		}
 		if (on == 1) {
-			gainNode.gain.setTargetAtTime(volume, audioCtx.currentTime + time / 1000, used_volume_smooth_start); // that is in sec
+			gainNode.gain.setTargetAtTime(volume, time, used_volume_smooth_start); // that is in sec
 		}
 		if (on == 0) {
-			gainNode.gain.setTargetAtTime(0, audioCtx.currentTime + time / 1000, used_volume_smooth_end);
+			gainNode.gain.setTargetAtTime(0, time, used_volume_smooth_end);
 		}
-		time = time + delay * tic;
+		time = time + (delay * tic / 1000);
 	}
-	gainNode.gain.setTargetAtTime(0, audioCtx.currentTime + time / 1000, used_volume_smooth_end);
-	setTimeout(stop_sound(), (time + 1000)); // that is in ms
-	// perhaps a memory leak here, because sounds goes on, but nobody freed the variables.
-	// on another hand, they are locals, so how could there be a memory leak anyway
+	gainNode.gain.setTargetAtTime(0, time, used_volume_smooth_end);
+	time = time + 0.2;
 }
 
 window.onload = function() {
