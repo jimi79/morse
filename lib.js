@@ -331,9 +331,7 @@ function store(datas) {
 
 function stop_sound() {
 	display_state('ready'); 
-	console.log('stop');
-}
-
+} 
 
 function get_total_length(tic) {
 
