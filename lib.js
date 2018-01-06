@@ -103,8 +103,6 @@ function convert_to_array(morse) {
 	delay_after_word = false;
 	delay_after_signal = false;
 	for (var i = 0, len = morse.length; i < len; i++) { 
-		//console.log(delay + ' ' + morse[i]);
-
 		if ((morse[i] == '.')||(morse[i] == '-')) {
 			if (delay_after_word) {
 				morse_array.push([2, 7]); // 2 means blank, but that has to be mutiplied by fan factor
