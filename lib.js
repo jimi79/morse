@@ -178,8 +178,7 @@ function display_state(state) {
 function display_volume() {
 	item = document.getElementById('volume');
 	item.innerHTML = "volume = " + volume;
-}
-
+} 
 
 function do_default_speed() {
 	speed = 25;
@@ -331,12 +330,8 @@ function get_total_length(tic) {
 	return total_length;
 }
 
-
-
-
 function play_sound() {
 	display_state('sound in progress...'); 
-
 	var oscillator = audioCtx.createOscillator();
 	var gainNode = audioCtx.createGain(); 
 	used_volume_smooth_start = volume_smooth_start;
@@ -376,10 +371,4 @@ window.onload = function() {
 	display_block(0, 0);
 	display_volume();
 	get_new();
-}
-
-
-
-function test() {
-	oscillator.start();
-}
+} 
