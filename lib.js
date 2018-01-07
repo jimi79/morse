@@ -82,22 +82,7 @@ function code(letter) {
 }
 
 function convert_to_array(morse) {
-	// in morse, i have something like
-	//      .-- .... .- - / - .... . / ..-. ..- -.-. -.-
-
-	// delay to wayt = 0
-
-	// if i have a ., i play delay, reset it, play tic, and tic will be added to delay
-	// if i have a -, i play delay, reset it, play 3tic, and tic will be added to delay
-	// if i have a  , i add 3tic to delay
-	// if i have a /, i add 1tic to delay (because it's space slash space, so that will be 7)
-
-
-
-
 	morse_array = new Array();
-
-	// and i need an index
 	delay = 0;
 	delay_after_letter = false;
 	delay_after_word = false;
@@ -121,7 +106,6 @@ function convert_to_array(morse) {
 			delay_after_word = false;
 			delay_after_signal = false; 
 		} 
-
 
 		if ((morse[i]) == '.') {
 			morse_array.push([1, 1]);
