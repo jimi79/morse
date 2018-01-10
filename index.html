@@ -7,48 +7,32 @@
 <script src="lib.js"></script> 
 <body>
 <div id="state"></div>
-<div id="speed"></div>
-<div id="fan_pause"></div>
-<div id="volume"></div>
+<div id="config"></div>
 <i><div id="text"></div></i>
 <div id="morse_as_text"></div>
 <div id="morse_as_block" class="box black"></div>
 
 <br/>
-<button onclick="get_new()">Load</button><br/> 
-<button onclick="play_sound()">Play</button><br>
+<button onclick="get_new()">Load</button>
+<button onclick="play_sound()">Play</button>
 <button onclick="play_flash()">Flash</button>
 <button onclick="request_stop_text()">Stop flash</button><br/> 
-<button onclick="display_morse()">Display</button><br/> 
-<button onclick="display()">Reveal</button><br/> 
-<button onclick="set_speed(5)">5wpm</button>
-<button onclick="set_speed(10)">10wpm</button>
-<button onclick="set_speed(15)">15wpm</button>
-<button onclick="set_speed(20)">20wpm</button>
-<button onclick="set_speed(25)">25wpm</button>
-<button onclick="set_speed(30)">30wpm</button>
-<button onclick="set_speed(40)">40wpm</button>
-<button onclick="set_speed(50)">50wpm</button>
-<button onclick="set_speed(60)">60wpm</button>
-<button onclick="set_speed(70)">70wpm</button>
+
+<button onclick="display_morse()">Display</button>
+<button onclick="display_text()">Reveal</button><br/> 
+
+wpm 
+<input id="slide_wpm" type="range" min="10" max="50" step="5" value="25" onInput="set_wpm(this.value)"/>
 <br/>
-<button onclick="set_fan_pause(1)">1.0f</button>
-<button onclick="set_fan_pause(1.5)">1.5f</button>
-<button onclick="set_fan_pause(2)">2f</button>
-<button onclick="set_fan_pause(3)">3f</button>
-<button onclick="set_fan_pause(4)">4f</button>
-<button onclick="set_fan_pause(5)">5f</button>
-<button onclick="set_fan_pause(7.5)">7.5f</button>
-<button onclick="set_fan_pause(10)">10f</button><br/>
+
+Fanrwsorth
+<input id="slide_fan_pause" type="range" min="1" max="10" step="0.5" value="1" onInput="set_fan_pause(this.value)"/>
 <br/>
-<button onclick="set_volume(0.1)">vol 10%</button>
-<button onclick="set_volume(0.25)">vol 25%</button>
-<button onclick="set_volume(0.5)">vol 50%</button>
-<button onclick="set_volume(0.75)">vol 75%</button>
-<button onclick="set_volume(0.9)">vol 90%</button>
-<button onclick="set_volume(1)">vol 100%</button><br/>
-<br/>
+
+Volume
+<input id="slide_volume" type="range" min="10" max="100" step="10" value="90" onInput="set_volume(this.value)"/> 
 <br>
+
 Some draft for you, won't be used for anythg<br/>
 <textarea name="free"></textarea> 
 </body>

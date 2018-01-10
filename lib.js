@@ -1,3 +1,9 @@
+// user settings
+var volume = 90;
+var wpm = 25; // in wpm
+var fan_pause = 1; // fansworth like factor 
+
+// some stuff 
 var url_get_new = "rest.php"; 
 var text = "";
 var morse_text = ""; // morse version, will be used for async shit
@@ -6,16 +12,11 @@ var index = -1; // index of the current thing played/flashed
 var flash_in_progress = false;
 
 // sound 
-var volume = 0.5;
 var initial_delay = 0;
 var volume_smooth_start = 0.0004;
 var volume_smooth_end = 0.0004;
 var frequency = 440;
-var pause_at_beginning = 1; // in secondes
-
-var speed = 25; // in wpm
-var fan_pause = 1; // fansworth like factor 
-var speed_direction = 0; // 1 for more, -1 for less
+var pause_at_beginning = 1; // in secondes 
 
 var audioCtx = new(window.AudioContext);
 
@@ -134,10 +135,15 @@ function convert_to_morse(text) {
 	return r;
 }
 
-function display() {
+function display_text() {
 	item = document.getElementById('text');
 	item.innerHTML = text;
 	display_state('displayed'); 
+}
+
+function display_config() {
+	item = document.getElementById('config');
+	item.innerHTML = "wpm " + wpm + ", fan " + fan_pause + ", vol " + volume + "%"; 
 }
 
 function display_block(here, visible) {
@@ -160,14 +166,16 @@ function display_morse() {
 	item.innerHTML = morse_text; 
 }
 
-function display_speed() {
-	item = document.getElementById('speed');
-	item.innerHTML = 'wpm = ' + speed;
+function display_wpm() {
+	//item = document.getElementById('wpm');
+	//item.innerHTML = 'wpm = ' + speed;
+	display_config();
 }
 
 function display_fan_pause() {
-	item = document.getElementById('fan_pause');
-	item.innerHTML = 'pause factor = ' + fan_pause;
+	//item = document.getElementById('fan_pause');
+	//item.innerHTML = 'pause factor = ' + fan_pause;
+	display_config();
 } 
 
 function display_state(state) {
@@ -176,45 +184,16 @@ function display_state(state) {
 }
 
 function display_volume() {
-	item = document.getElementById('volume');
-	item.innerHTML = "volume = " + volume;
+	//item = document.getElementById('volume');
+	//item.innerHTML = "volume = " + volume;
+	display_config();
 } 
-
-function do_default_speed() {
-	speed = 25;
-	speed_direction = 0;
-	display_speed();
-}
-
-function do_speed_change(direction) {
-	if (speed_direction != direction) {
-		speed_direction = direction;
-		speed_change =0; }
-	switch (speed_change) {
-		case 0: speed_change=1;break;
-		case 1: speed_change=2;break;
-		case 2: speed_change=5;break;
-		case 5: speed_change=10;break;
-	}
-	speed = speed + (speed_change * direction); 
-	if (speed < 1) { speed = 1; }
-	if (speed > 1000) { speed = 1000; }
-	display_speed();
-}
 
 function stop_flash() {
 	flash_in_progress = false;
 	display_block(0, 0);
 	display_state('ready');
 }
-
-function faster() {
-	do_speed_change(1)
-}
-
-function flash(on) {
-	display_block(1, on);
-} 
 
 function get_new() {
 	display_state('loading');
@@ -228,6 +207,13 @@ function get_new() {
 	};
 	xmlhttp.open("GET", url_get_new, true);
 	xmlhttp.send();
+}
+
+function init_components() {
+	document.getElementById('slide_wpm').value = wpm;
+	document.getElementById('slide_fan_pause').value = fan_pause;
+	document.getElementById('slide_volume').value = volume;
+
 }
 
 function parse_text() {
@@ -250,7 +236,7 @@ function play_flash() {
 }
 
 function process_flash() {
-	tic = 1200 / speed;
+	tic = 1200 / wpm;
 	if (flash_in_progress) {
 		index = index + 1;
 		item = morse_array[index];
@@ -290,18 +276,14 @@ function set_fan_pause(val) {
 	display_fan_pause();
 }
 
-function set_speed(val) {
-	speed = val;
-	display_speed();
+function set_wpm(val) {
+	wpm = val;
+	display_wpm();
 }
 
 function set_volume(val) {
 	volume = val;
 	display_volume();
-}
-
-function slower() {
-	do_speed_change(-1)
 }
 
 function store(datas) {
@@ -340,7 +322,7 @@ function play_sound() {
 	gainNode.connect(audioCtx.destination);
 	time = audioCtx.currentTime;
 	gainNode.gain.setValueAtTime(0, time); 
-	tic = 1200 / speed; 
+	tic = 1200 / wpm; 
 	setTimeout(stop_sound, get_total_length(tic) * 1000); // that is in ms 
 	oscillator.start(); 
 	time = time + pause_at_beginning; 
@@ -353,7 +335,7 @@ function play_sound() {
 			delay = delay * fan_pause; 
 		}
 		if (on == 1) {
-			gainNode.gain.setTargetAtTime(volume, time, used_volume_smooth_start); // that is in sec
+			gainNode.gain.setTargetAtTime(volume/100, time, used_volume_smooth_start); // that is in sec
 		}
 		if (on == 0) {
 			gainNode.gain.setTargetAtTime(0, time, used_volume_smooth_end);
@@ -366,9 +348,7 @@ function play_sound() {
 
 window.onload = function() {
 	display_state('click on Load'); // will disappear if get_new called after
-	display_speed();
-	display_fan_pause();
+	display_config();
 	display_block(0, 0);
-	display_volume();
 	get_new();
 } 
