@@ -7,6 +7,10 @@ html,body
 	overflow-x: hidden; 
 } 
 
+.outline {
+	border: 1px solid blue;
+}
+
 .box{
 	width:100px;
 	height:100px;
@@ -24,4 +28,6 @@ html,body
 }
 .blue{
 	background:#00f;
+}
+.div {
 }
