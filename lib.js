@@ -138,7 +138,6 @@ function convert_to_morse(text) {
 function display_text() {
 	item = document.getElementById('text');
 	item.innerHTML = text;
-	display_state('displayed'); 
 }
 
 function display_config() {
