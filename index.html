@@ -11,32 +11,23 @@
 <div id="config"></div>
 <i><div id="text"></div></i>
 <div id="morse_as_text"></div>
-<div id="morse_as_block" class="box black"></div>
-
-<br/>
+<div id="morse_as_block" class="box black"></div> 
 <button onclick="get_new()">Load</button>
 <button onclick="play_sound()">Play</button>
 <button onclick="play_flash()">Flash</button>
 <button onclick="request_stop_text()">Stop flash</button><br/> 
-
 <button onclick="display_morse()">Display</button>
 <button onclick="display_text()">Reveal</button><br/> 
-
 wpm 
 <input id="slide_wpm" type="range" min="10" max="50" step="5" value="25" onInput="set_wpm(this.value)"/>
-<br/>
-
+<br/> 
 Fanrwsorth
 <input id="slide_fan_pause" type="range" min="1" max="10" step="0.5" value="1" onInput="set_fan_pause(this.value)"/>
-<br/>
-
+<br/> 
 Volume
 <input id="slide_volume" type="range" min="10" max="100" step="10" value="90" onInput="set_volume(this.value)"/> 
 <br/>
-<br/>
-
-
-<input type="text" value="draft"></input> 
+<textarea value="answer" rows="5" cols="30"></textarea>
 </body>
 </html>
 
