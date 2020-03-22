@@ -18,8 +18,6 @@ var volume_smooth_end = 0.0004;
 var frequency = 440;
 var pause_at_beginning = 1; // in secondes 
 
-var audioCtx = new(window.AudioContext);
-
 function code(letter) {
 	switch (letter) {
 		case 'A': out = '.-'; break;
@@ -295,8 +293,7 @@ function stop_sound() {
 	display_state('ready'); 
 } 
 
-function get_total_length(tic) {
-
+function get_total_length(tic) { 
 	total_length = pause_at_beginning * 1.0;
 	for (var i = 0, len = morse_array.length; i < len; i++) { 
 		val = morse_array[i];
@@ -313,6 +310,7 @@ function get_total_length(tic) {
 
 function play_sound() {
 	display_state('sound in progress...'); 
+	var audioCtx = new(window.AudioContext); 
 	var oscillator = audioCtx.createOscillator();
 	var gainNode = audioCtx.createGain(); 
 	used_volume_smooth_start = volume_smooth_start;
