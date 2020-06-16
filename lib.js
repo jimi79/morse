@@ -200,6 +200,7 @@ function get_new() {
 		if (this.readyState == 4 && this.status == 200) {
 			var datas = JSON.parse(this.responseText);
 			store(datas);
+			answer.value = "";
 		}
 	};
 	xmlhttp.open("GET", url_get_new, true);
@@ -207,10 +208,9 @@ function get_new() {
 }
 
 function init_components() {
-	document.getElementById('slide_wpm').value = wpm;
-	document.getElementById('slide_farn_pause').value = farn_pause;
-	document.getElementById('slide_volume').value = volume;
-
+	slide_wpm.value = wpm;
+	slide_farn_pause.value = farn_pause;
+	slide_volume.value = volume; 
 }
 
 function parse_text() {
