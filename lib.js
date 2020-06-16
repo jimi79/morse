@@ -1,7 +1,7 @@
 // user settings
 var volume = 90;
-var wpm = 25; // in wpm
-var fan_pause = 1; // fansworth like factor 
+var wpm = 20; // in wpm
+var farn_pause = 4; // farnsworth like factor 
 
 // some stuff 
 var url_get_new = "rest.php"; 
@@ -89,7 +89,7 @@ function convert_to_array(morse) {
 	for (var i = 0, len = morse.length; i < len; i++) { 
 		if ((morse[i] == '.')||(morse[i] == '-')) {
 			if (delay_after_word) {
-				morse_array.push([2, 7]); // 2 means blank, but that has to be mutiplied by fan factor
+				morse_array.push([2, 7]); // 2 means blank, but that has to be mutiplied by farn factor
 			}
 			else {
 				if (delay_after_letter) {
@@ -140,7 +140,7 @@ function display_text() {
 
 function display_config() {
 	item = document.getElementById('config');
-	item.innerHTML = "wpm " + wpm + ", fan " + fan_pause + ", vol " + volume + "%"; 
+	item.innerHTML = "wpm " + wpm + ", farn " + farn_pause + ", vol " + volume + "%"; 
 }
 
 function display_block(here, visible) {
@@ -169,9 +169,9 @@ function display_wpm() {
 	display_config();
 }
 
-function display_fan_pause() {
-	//item = document.getElementById('fan_pause');
-	//item.innerHTML = 'pause factor = ' + fan_pause;
+function display_farn_pause() {
+	//item = document.getElementById('farn_pause');
+	//item.innerHTML = 'pause factor = ' + farn_pause;
 	display_config();
 } 
 
@@ -208,7 +208,7 @@ function get_new() {
 
 function init_components() {
 	document.getElementById('slide_wpm').value = wpm;
-	document.getElementById('slide_fan_pause').value = fan_pause;
+	document.getElementById('slide_farn_pause').value = farn_pause;
 	document.getElementById('slide_volume').value = volume;
 
 }
@@ -241,7 +241,7 @@ function process_flash() {
 		delay = item[1] * tic;
 		if (on == 2) {
 			on = 0;
-			delay = delay * fan_pause;
+			delay = delay * farn_pause;
 		}
 		display_block(1, on); 
 		if (index < morse_array.length - 1) {
@@ -268,9 +268,9 @@ function reset() {
 	item.innerHTML = '';
 }
 
-function set_fan_pause(val) {
-	fan_pause = val;
-	display_fan_pause();
+function set_farn_pause(val) {
+	farn_pause = val;
+	display_farn_pause();
 }
 
 function set_wpm(val) {
@@ -301,7 +301,7 @@ function get_total_length(tic) {
 		delay = val[1];
 		if (on == 2) {
 			on = 0;
-			delay = delay * fan_pause; 
+			delay = delay * farn_pause; 
 		}
 		total_length = total_length + (delay * tic / 1000);
 	} 
@@ -329,7 +329,7 @@ function play_sound() {
 		delay = val[1];
 		if (on == 2) {
 			on = 0;
-			delay = delay * fan_pause; 
+			delay = delay * farn_pause; 
 		}
 		if (on == 1) {
 			gainNode.gain.setTargetAtTime(volume/100, time, used_volume_smooth_start); // that is in sec

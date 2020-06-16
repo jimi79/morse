@@ -19,13 +19,13 @@
 <button onclick="display_morse()">Display</button>
 <button onclick="display_text()">Reveal</button><br/> 
 wpm 
-<input id="slide_wpm" type="range" min="1" max="50" step="1" value="25" onInput="set_wpm(this.value)"/>
+<input id="slide_wpm" style="width:100%" type="range" min="10" max="25" step="1" onInput="set_wpm(this.value)"/>
 <br/> 
-Fanrwsorth
-<input id="slide_fan_pause" type="range" min="1" max="10" step="0.5" value="1" onInput="set_fan_pause(this.value)"/>
+Farnrwsorth
+<input id="slide_farn_pause" style="width:100%" type="range" min="1" max="10" step="0.5" onInput="set_farn_pause(this.value)"/>
 <br/> 
 Volume
-<input id="slide_volume" type="range" min="10" max="100" step="10" value="90" onInput="set_volume(this.value)"/> 
+<input id="slide_volume" style="width:100%" type="range" min="10" max="100" step="10" onInput="set_volume(this.value)"/> 
 <br/>
 <textarea value="answer" rows="5" cols="30"></textarea>
 </body>
