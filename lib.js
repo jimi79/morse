@@ -148,7 +148,7 @@ function display_text() {
 }
 
 function display_config() {
-	div_config.innerHTML = "wpm " + wpm + ", farn " + farn + ", vol " + volume + "%"; 
+	div_config.innerHTML = "wpm " + wpm + "/" + farn;
 }
 
 function display_version() {
