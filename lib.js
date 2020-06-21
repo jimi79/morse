@@ -1,15 +1,18 @@
 // user settings
 var volume = 90;
-var wpm = 20; // in wpm
-var farn_pause = 4; // farnsworth like factor 
+var wpm = 25; // wpm
+var farn = 8; // farn wpm
 
 // some stuff 
+var version = "2.1";
 var url_get_new = "rest.php"; 
 var text = "";
 var morse_text = ""; // morse version, will be used for async shit
 var morse_array;
 var index = -1; // index of the current thing played/flashed 
 var flash_in_progress = false;
+var tic;
+var farn_tic;
 
 // sound 
 var initial_delay = 0;
@@ -17,6 +20,13 @@ var volume_smooth_start = 0.0004;
 var volume_smooth_end = 0.0004;
 var frequency = 440;
 var pause_at_beginning = 1; // in secondes 
+
+function calculate_tics() {
+	tic = 60 / (50 * wpm);
+	farn_tic = (60 / farn - 60 / wpm) / 5;
+	console.log("tic = " + tic);
+	console.log("farn_tic = " + farn_tic); 
+}
 
 function code(letter) {
 	switch (letter) {
@@ -89,15 +99,15 @@ function convert_to_array(morse) {
 	for (var i = 0, len = morse.length; i < len; i++) { 
 		if ((morse[i] == '.')||(morse[i] == '-')) {
 			if (delay_after_word) {
-				morse_array.push([2, 7]); // 2 means blank, but that has to be mutiplied by farn factor
+				morse_array.push([0, 7, true]); // 2 means blank, but that has to be mutiplied by farn factor
 			}
 			else {
 				if (delay_after_letter) {
-					morse_array.push([2, 3]);
+					morse_array.push([0, 3, true]);
 				}
 				else {
 					if (delay_after_signal) {
-						morse_array.push([0, 1]);
+						morse_array.push([0, 1, false]);
 					} 
 				}
 			}
@@ -107,11 +117,11 @@ function convert_to_array(morse) {
 		} 
 
 		if ((morse[i]) == '.') {
-			morse_array.push([1, 1]);
+			morse_array.push([1, 1, false]);
 			delay_after_signal = true;
 		}
 		if ((morse[i]) == '-') {
-			morse_array.push([1, 3]);
+			morse_array.push([1, 3, false]);
 			delay_after_signal = true;
 		}
 		if ((morse[i]) == ' ') {
@@ -122,7 +132,7 @@ function convert_to_array(morse) {
 		} 
 	} 
 	return morse_array;
-}
+} 
 
 function convert_to_morse(text) {
 	r = '';
@@ -134,55 +144,49 @@ function convert_to_morse(text) {
 }
 
 function display_text() {
-	item = document.getElementById('text');
-	item.innerHTML = text;
+	div_text.innerHTML = text;
 }
 
 function display_config() {
-	item = document.getElementById('config');
-	item.innerHTML = "wpm " + wpm + ", farn " + farn_pause + ", vol " + volume + "%"; 
+	div_config.innerHTML = "wpm " + wpm + ", farn " + farn + ", vol " + volume + "%"; 
+}
+
+function display_version() {
+	div_version.innerHTML = "version " + version;
 }
 
 function display_block(here, visible) {
 	if (here == 0) {
-		document.getElementById('morse_as_block').style.display = "none"; 
+		div_morse_as_block.style.display = "none"; 
 	}
 	else { 
-		document.getElementById('morse_as_block').style.display = "block";
+		div_morse_as_block.style.display = "block";
 	}
 	if (visible == 0) {
-		document.getElementById('morse_as_block').style.visibility = "hidden"; 
+		div_morse_as_block.style.visibility = "hidden"; 
 	}
 	else { 
-		document.getElementById('morse_as_block').style.visibility = "visible"; 
+		div_morse_as_block.style.visibility = "visible"; 
 	} 
 }
 
 function display_morse() {
-	item = document.getElementById('morse_as_text');
-	item.innerHTML = morse_text; 
+	div_morse_as_text.innerHTML = morse_text; 
 }
 
 function display_wpm() {
-	//item = document.getElementById('wpm');
-	//item.innerHTML = 'wpm = ' + speed;
 	display_config();
 }
 
-function display_farn_pause() {
-	//item = document.getElementById('farn_pause');
-	//item.innerHTML = 'pause factor = ' + farn_pause;
+function display_farn() {
 	display_config();
 } 
 
 function display_state(state) {
-	item = document.getElementById('state');
-	item.innerHTML = state;
+	div_state.innerHTML = state;
 }
 
 function display_volume() {
-	//item = document.getElementById('volume');
-	//item.innerHTML = "volume = " + volume;
 	display_config();
 } 
 
@@ -209,18 +213,19 @@ function get_new() {
 
 function init_components() {
 	slide_wpm.value = wpm;
-	slide_farn_pause.value = farn_pause;
+	slide_farn.value = farn;
 	slide_volume.value = volume; 
 }
 
 function parse_text() {
 	morse_text = convert_to_morse(text);
 	morse_array = convert_to_array(morse_text);
-	display_state('ready');
+	display_state(text.length + " chars loaded");
 	flash_in_progress = false;
 } 
 
 function play_flash() {
+	calculate_tics();
 	if (!flash_in_progress) {
 		display_state('flash in progress');
 		index = -1;
@@ -233,19 +238,13 @@ function play_flash() {
 }
 
 function process_flash() {
-	tic = 1200 / wpm;
 	if (flash_in_progress) {
 		index = index + 1;
-		item = morse_array[index];
-		on = item[0];
-		delay = item[1] * tic;
-		if (on == 2) {
-			on = 0;
-			delay = delay * farn_pause;
-		}
-		display_block(1, on); 
+		val = morse_array[index];
+		delay = val[1] * tic + val[2] * farn_tic;
+		display_block(1, val[0]); 
 		if (index < morse_array.length - 1) {
-			setTimeout(process_flash, delay); }
+			setTimeout(process_flash, delay * 1000); }
 		else { flash_in_progress = false; } 
 	}
 
@@ -255,8 +254,7 @@ function process_flash() {
 }
 
 function remove() {
-	item = document.getElementById('text');
-	item.innerHTML = "";
+	text.innerHTML = "";
 }
 
 function request_stop_text() {
@@ -264,13 +262,12 @@ function request_stop_text() {
 }
 
 function reset() { 
-	item = document.getElementById('morse_as_text');
-	item.innerHTML = '';
+	div_morse_as_text.innerHTML = '';
 }
 
-function set_farn_pause(val) {
-	farn_pause = val;
-	display_farn_pause();
+function set_farn(val) {
+	farn = val;
+	display_farn();
 }
 
 function set_wpm(val) {
@@ -293,22 +290,26 @@ function stop_sound() {
 	display_state('ready'); 
 } 
 
+function get_farn_factor() {
+	// i choose to add one farn pause after each letter and also a farn pause of the same value after a word
+}
+
 function get_total_length(tic) { 
 	total_length = pause_at_beginning * 1.0;
 	for (var i = 0, len = morse_array.length; i < len; i++) { 
 		val = morse_array[i];
 		on = val[0];
 		delay = val[1];
-		if (on == 2) {
-			on = 0;
-			delay = delay * farn_pause; 
+		total_length = total_length + (delay * tic);
+		if (val[2]) {
+			total_length = total_length + get_farn_factor() * 1;
 		}
-		total_length = total_length + (delay * tic / 1000);
 	} 
 	return total_length;
 }
 
 function play_sound() {
+	calculate_tics();
 	display_state('sound in progress...'); 
 	var audioCtx = new(window.AudioContext); 
 	var oscillator = audioCtx.createOscillator();
@@ -319,33 +320,24 @@ function play_sound() {
 	gainNode.connect(audioCtx.destination);
 	time = audioCtx.currentTime;
 	gainNode.gain.setValueAtTime(0, time); 
-	tic = 1200 / wpm; 
-	setTimeout(stop_sound, get_total_length(tic) * 1000); // that is in ms 
 	oscillator.start(); 
 	time = time + pause_at_beginning; 
+	add_pause_to_next = false;
 	for (var i = 0, len = morse_array.length; i < len; i++) { 
 		val = morse_array[i];
-		on = val[0];
-		delay = val[1];
-		if (on == 2) {
-			on = 0;
-			delay = delay * farn_pause; 
-		}
-		if (on == 1) {
-			gainNode.gain.setTargetAtTime(volume/100, time, used_volume_smooth_start); // that is in sec
-		}
-		if (on == 0) {
-			gainNode.gain.setTargetAtTime(0, time, used_volume_smooth_end);
-		}
-		time = time + (delay * tic / 1000);
+		gainNode.gain.setTargetAtTime(volume * val[0] / 100, time, used_volume_smooth_start); 
+		time = time + val[1] * tic + val[2] * farn_tic;
 	}
 	gainNode.gain.setTargetAtTime(0, time, used_volume_smooth_end);
-	time = time + 0.2;
+	time = time + 0.2; 
+	setTimeout(stop_sound, time);
 }
 
 window.onload = function() {
 	display_state('click on Load'); // will disappear if get_new called after
+	display_version();
 	display_config();
 	display_block(0, 0);
+	init_components();
 	get_new();
 } 
