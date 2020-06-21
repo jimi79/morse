@@ -4,7 +4,7 @@ var wpm = 25; // wpm
 var farn = 8; // farn wpm
 
 // some stuff 
-var version = "2.1";
+var version = "2.2";
 var url_get_new = "rest.php"; 
 var text = "";
 var morse_text = ""; // morse version, will be used for async shit
@@ -23,7 +23,7 @@ var pause_at_beginning = 1; // in secondes
 
 function calculate_tics() {
 	tic = 60 / (50 * wpm);
-	farn_tic = (60 / farn - 60 / wpm) / 5;
+	farn_tic = (60 / farn - 60 / wpm) / 6; // 4 spaces after letters (di) + 1 space after word (di * 2), i use 6 'farnworth' spaces
 	console.log("tic = " + tic);
 	console.log("farn_tic = " + farn_tic); 
 }
@@ -99,15 +99,15 @@ function convert_to_array(morse) {
 	for (var i = 0, len = morse.length; i < len; i++) { 
 		if ((morse[i] == '.')||(morse[i] == '-')) {
 			if (delay_after_word) {
-				morse_array.push([0, 7, true]); // 2 means blank, but that has to be mutiplied by farn factor
+				morse_array.push([0, 7, 2]); // 2 means blank, but that has to be mutiplied by farn factor
 			}
 			else {
 				if (delay_after_letter) {
-					morse_array.push([0, 3, true]);
+					morse_array.push([0, 3, 1]);
 				}
 				else {
 					if (delay_after_signal) {
-						morse_array.push([0, 1, false]);
+						morse_array.push([0, 1, 0]);
 					} 
 				}
 			}
@@ -117,11 +117,11 @@ function convert_to_array(morse) {
 		} 
 
 		if ((morse[i]) == '.') {
-			morse_array.push([1, 1, false]);
+			morse_array.push([1, 1, 0]);
 			delay_after_signal = true;
 		}
 		if ((morse[i]) == '-') {
-			morse_array.push([1, 3, false]);
+			morse_array.push([1, 3, 0]);
 			delay_after_signal = true;
 		}
 		if ((morse[i]) == ' ') {
@@ -254,7 +254,7 @@ function process_flash() {
 }
 
 function remove() {
-	text.innerHTML = "";
+	div_text.innerHTML = "";
 }
 
 function request_stop_text() {
@@ -330,7 +330,7 @@ function play_sound() {
 	}
 	gainNode.gain.setTargetAtTime(0, time, used_volume_smooth_end);
 	time = time + 0.2; 
-	setTimeout(stop_sound, time);
+	setTimeout(stop_sound, time * 1000);
 }
 
 window.onload = function() {
