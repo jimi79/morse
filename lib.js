@@ -20,6 +20,8 @@ var volume_smooth_start = 0.0004;
 var volume_smooth_end = 0.0004;
 var frequency = 440;
 var pause_at_beginning = 1; // in secondes 
+var gainNode;
+var sound_in_progress = false;
 
 function calculate_tics() {
 	tic = 60 / (50 * wpm);
@@ -196,6 +198,15 @@ function stop_flash() {
 	display_state('ready');
 }
 
+function stop_sound() {
+	if (sound_in_progress) {
+		gainNode.gain.cancelAndHoldAtTime(0);
+		oscillator.stop();
+		clearTimeout(timer);
+		end_sound();
+	}
+}
+
 function get_new() {
 	display_state('loading');
 	remove();
@@ -286,8 +297,9 @@ function store(datas) {
 	parse_text();
 }
 
-function stop_sound() {
+function end_sound() {
 	display_state('ready'); 
+	sound_in_progress = false;
 } 
 
 function get_farn_factor() {
@@ -311,9 +323,10 @@ function get_total_length(tic) {
 function play_sound() {
 	calculate_tics();
 	display_state('sound in progress...'); 
-	var audioCtx = new(window.AudioContext); 
-	var oscillator = audioCtx.createOscillator();
-	var gainNode = audioCtx.createGain(); 
+	audioCtx = new(window.AudioContext); 
+	oscillator = audioCtx.createOscillator();
+	gainNode = audioCtx.createGain(); 
+	sound_in_progress = true;
 	used_volume_smooth_start = volume_smooth_start;
 	used_volume_smooth_end = volume_smooth_end; 
 	oscillator.connect(gainNode);
@@ -330,7 +343,7 @@ function play_sound() {
 	}
 	gainNode.gain.setTargetAtTime(0, time, used_volume_smooth_end);
 	time = time + 0.2; 
-	setTimeout(stop_sound, time * 1000);
+	timer = setTimeout(end_sound, time * 1000);
 }
 
 window.onload = function() {
