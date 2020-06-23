@@ -98,17 +98,12 @@ function remove() {
 
 function set_farn(val) {
 	farn = val;
-	display_state();
+	display_config();
 }
 
 function set_wpm(val) {
 	wpm = val;
-	display_state();
-}
-
-function set_volume(val) {
-	volume = val;
-	display_state();
+	display_config();
 }
 
 function event_end_sound() { // has to be implemented
