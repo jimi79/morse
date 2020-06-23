@@ -1,0 +1,39 @@
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="stylesheet" href="style.css" />
+<title>Morse</title>
+</head>
+<script src="lib.js"></script> 
+<script src="random.js"></script> 
+<body>
+<div id="div_state"></div>
+<div id="div_length"></div>
+<div id="div_version"></div>
+<div id="div_config"></div>
+<i><div id="div_text"></div></i>
+<div id="div_morse_as_text"></div>
+<div id="div_morse_as_block" class="box black"></div> 
+<button onclick="get_new()">Load</button>
+<button onclick="play_sound()">Play</button>
+<button onclick="stop_sound()">Stop sound</button><br/> 
+<br>
+<button onclick="play_flash()">Flash</button>
+<button onclick="stop_flash()">Stop flash</button><br/> 
+<br>
+<button onclick="display_morse()">Display</button>
+<button onclick="display_text()">Reveal</button><br/> 
+wpm 
+<input id="slide_wpm" style="width:100%" type="range" min="10" max="25" step="1" onInput="set_wpm(this.value)"/>
+<br/> 
+Farnrwsorth
+<input id="slide_farn" style="width:100%" type="range" min="1" max="25" step="1" onInput="set_farn(this.value)"/>
+<br/> 
+Volume
+<input id="slide_volume" style="width:100%" type="range" min="10" max="100" step="10" onInput="set_volume(this.value)"/> 
+<br/>
+<textarea id="answer" rows="5" cols="30"></textarea>
+</body>
+</html>
+
